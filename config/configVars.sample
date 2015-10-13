@@ -1,0 +1,5 @@
+{
+        "eventbriteToken" 	: "Enter your Eventbrite Authorization Token Here",
+        "twilioSID" 		: "Enter your Twilio Account SID Here",
+        "twilioAuthToken"	: "Enter your Twilio Authorization Token Here"
+}

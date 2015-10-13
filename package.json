@@ -1,0 +1,17 @@
+{
+  "name": "eventnotify",
+  "version": "0.1.0",
+  "description": "Link Eventbrite and Twilio API's for SMS notification of upcoming events",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tim Klein",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1",
+    "express": "^4",
+    "jade": "^1",
+    "twilio": "^2.5.1"
+  }
+}
