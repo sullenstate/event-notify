@@ -4,11 +4,7 @@ var twilio = require('twilio');
 // Load Configuration Keys
 var configVars = require('../config/configVars.json');
 
-
-var indexController = {
-	index: function(req, res) {
-		res.render('index');
-	},
+var apiController = {
 	events: function(req, res) {
 		var options = {
 			host: 'www.eventbriteapi.com',
@@ -23,21 +19,35 @@ var indexController = {
 			res.on('data', function(chunk) {
 				bodyChunks.push(chunk);
 			}).on('end', function() {
+				
 				var body = Buffer.concat(bodyChunks);
 				
-				var removeDash = function(val){
-					return val != '-'
+				var removeGarbage = function(val){
+					if (val.charCodeAt() > 47 && val.charCodeAt() < 58) {
+						return val;
+					};
 				};
 
-				var toNumber = JSON.parse(body)['attendees'][1]['answers'][0]['answer'].split('').filter(removeDash).join('');
-				// client.sendMessage( { to: '+1' + toNumber, from:'+17208975209', body:'Hello ' + JSON.parse(body)['attendees'][1]['profile']['first_name'] + ' - This is a reminder that you have tickets to a Regenxx seminar later today!' }, function( err, data ) {
-				// 	console.log(err);
-				// });
+				var toNumbers = [];
+
+				for (var i = 0; i < JSON.parse(body)['attendees'].length; i++) {
+					if (JSON.parse(body)['attendees'][i]['answers'][0]['answer']) {
+						toNumbers.push(JSON.parse(body)['attendees'][i]['answers'][0]['answer'].split('').filter(removeGarbage).join(''));
+					};
+				};
+				console.log(toNumbers);
+
+				for (var i = 0; i < toNumbers.length; i++) {
+					var toNumber = toNumbers[i];
+
+					client.sendMessage( { to: '+1' + toNumber, from:'+17208975209', body:'Hello, this is a reminder that you have tickets to a Regenxx seminar later today!' }, function( err, data ) {
+						console.log('+1' + toNumber);
+						console.log(err);
+					});
+				};
 				
-				console.log('+1' + toNumber);
 				console.log( JSON.parse(body)['attendees'][1]['profile']['first_name'] );
-				console.log( JSON.parse(body)['attendees'][1]['answers'][0]['answer'] );
-				console.log(JSON.parse(body));
+				// console.log(JSON.parse(body));
 			})
 		});
 
@@ -47,6 +57,6 @@ var indexController = {
 
 		res.sendStatus('200');
 	}
-};
+}
 
-module.exports = indexController;
+module.exports = apiController;
