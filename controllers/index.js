@@ -12,7 +12,8 @@ var indexController = {
 	events: function(req, res) {
 		var options = {
 			host: 'www.eventbriteapi.com',
-			path: '/v3/users/me/owned_event_attendees/?token=' + configVars.eventbriteToken
+			path: '/v3/users/me/owned_event_attendees/',
+			headers : {"Authorization": "Bearer " + configVars.eventbriteToken }
 		};
 		var client = twilio( configVars.twilioSID, configVars.twilioAuthToken );
 		var req = https.get(options, function(res) {
@@ -29,14 +30,14 @@ var indexController = {
 				};
 
 				var toNumber = JSON.parse(body)['attendees'][1]['answers'][0]['answer'].split('').filter(removeDash).join('');
-				client.sendMessage( { to: '+1' + toNumber, from:'+17208975209', body:'Hello ' + JSON.parse(body)['attendees'][1]['profile']['first_name'] + ' - This is a reminder that you have tickets to a Regenxx seminar later today!' }, function( err, data ) {
-					console.log(err);
-				});
+				// client.sendMessage( { to: '+1' + toNumber, from:'+17208975209', body:'Hello ' + JSON.parse(body)['attendees'][1]['profile']['first_name'] + ' - This is a reminder that you have tickets to a Regenxx seminar later today!' }, function( err, data ) {
+				// 	console.log(err);
+				// });
 				
 				console.log('+1' + toNumber);
 				console.log( JSON.parse(body)['attendees'][1]['profile']['first_name'] );
 				console.log( JSON.parse(body)['attendees'][1]['answers'][0]['answer'] );
-				// console.log(JSON.parse(body));
+				console.log(JSON.parse(body));
 			})
 		});
 
