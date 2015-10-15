@@ -40,7 +40,7 @@ var apiController = {
 				for (var i = 0; i < toNumbers.length; i++) {
 					var toNumber = toNumbers[i];
 
-					client.sendMessage( { to: '+1' + toNumber, from:'+17208975209', body:'Hello, this is a reminder that you have tickets to a Regenxx seminar later today!' }, function( err, data ) {
+					client.sendMessage( { to: '+1' + toNumber, from: configVars.fromNumber, body: configVars.messageBody }, function( err, data ) {
 						console.log('+1' + toNumber);
 						console.log(err);
 					});

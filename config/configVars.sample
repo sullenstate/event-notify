@@ -1,5 +1,7 @@
 {
         "eventbriteToken" 	: "Enter your Eventbrite Authorization Token Here",
         "twilioSID" 		: "Enter your Twilio Account SID Here",
-        "twilioAuthToken"	: "Enter your Twilio Authorization Token Here"
+        "twilioAuthToken"	: "Enter your Twilio Authorization Token Here",
+        "fromNumber"		: "Enter your Twilio phone number SMS source phone number",
+        "messageBody"		: "Hello, this is a reminder that you have tickets to a seminar later today!"
 }
