@@ -22,6 +22,7 @@ var apiController = {
 				
 				var body = Buffer.concat(bodyChunks);
 				
+				// Function to remove extraneous characters
 				var removeGarbage = function(val){
 					if (val.charCodeAt() > 47 && val.charCodeAt() < 58) {
 						return val;
@@ -32,21 +33,27 @@ var apiController = {
 
 				for (var i = 0; i < JSON.parse(body)['attendees'].length; i++) {
 					if (JSON.parse(body)['attendees'][i]['answers'][0]['answer']) {
+						toNumbers.push(JSON.parse(body)['attendees'][i]['profile']['first_name']);
 						toNumbers.push(JSON.parse(body)['attendees'][i]['answers'][0]['answer'].split('').filter(removeGarbage).join(''));
 					};
 				};
 				console.log(toNumbers);
 
-				for (var i = 0; i < toNumbers.length; i++) {
+				for (var i = 1; i < toNumbers.length; i += 2) {
 					var toNumber = toNumbers[i];
 
-					client.sendMessage( { to: '+1' + toNumber, from: configVars.fromNumber, body: configVars.messageBody }, function( err, data ) {
-						console.log('+1' + toNumber);
-						console.log(err);
-					});
+					if (toNumber.length === 10) {
+
+						console.log('Hello ' + toNumbers[i-1] + configVars.messageBody);
+						
+						client.sendMessage( { to: '+1' + toNumber, from: configVars.fromNumber, body: 'Hello ' + toNumbers[i-1] + configVars.messageBody }, function( err, data ) {
+							// console.log('+1' + toNumber);
+							console.log(err);
+						});
+					};
 				};
 				
-				console.log( JSON.parse(body)['attendees'][1]['profile']['first_name'] );
+				// console.log( JSON.parse(body)['attendees'][1]['profile']['first_name'] );
 				// console.log(JSON.parse(body));
 			})
 		});

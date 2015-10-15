@@ -14,6 +14,6 @@ A call to the */events* path in a browser window will trigger a GET request to *
 
 ## To Do
 
-+ Filter out invalid phone numbers.
++ ~~Filter out invalid phone numbers.~~
 + Convert to a cron job that only sends one message per attendee at a specified time prior to the start of the event.
-+ Personalize messages utilizing other data retrieved from the API.
++ ~~Personalize messages utilizing other data retrieved from the API.~~
