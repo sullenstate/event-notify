@@ -10,10 +10,13 @@ Currently, users will need to set up an app in their Eventbrite settings to obta
 
 Authorization information should be added to the *config/configVars.sample* file and the extension for the file should be changed to *.json*.
 
-A call to the */events* path in a browser window will trigger a GET request to *Eventbrite*, parse the returned attendees list and send SMS messages to all attendees.
+A call to the */attendees* path in a browser window will trigger a GET request to *Eventbrite*, parse the returned attendees list and send SMS messages to all attendees.
+
+The */events* path will console log data about owned events. It is in mid-development currently. 
 
 ## To Do
 
 + ~~Filter out invalid phone numbers.~~
-+ Convert to a cron job that only sends one message per attendee at a specified time prior to the start of the event.
 + ~~Personalize messages utilizing other data retrieved from the API.~~
++ Add event information and event url to SMS message.
++ Convert to a cron job that only sends one message per attendee at a specified time prior to the start of the event.

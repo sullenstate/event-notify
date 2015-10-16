@@ -1,11 +1,12 @@
 var https = require('https');
 var twilio = require('twilio');
+var eventbriteData = require('../model/eventbriteData.js');
 
 // Load Configuration Keys
 var configVars = require('../config/configVars.json');
 
 var apiController = {
-	events: function(req, res) {
+	attendees: function(req, res) {
 		var options = {
 			host: 'www.eventbriteapi.com',
 			path: '/v3/users/me/owned_event_attendees/',
@@ -63,6 +64,51 @@ var apiController = {
 		});
 
 		res.sendStatus('200');
+	},
+	events : function (req, res) {
+		var options = {
+			host: 'www.eventbriteapi.com',
+			path: '/v3/users/me/owned_events/',
+			headers : {"Authorization": "Bearer " + configVars.eventbriteToken }
+		};
+
+		var events = [];
+
+		var req = https.request(options, function(res) {
+
+			var bodyChunks = [];
+			
+			res.on('data', function(chunk) {
+				bodyChunks.push(chunk);
+			}).on('end', function() {
+				
+				var body = Buffer.concat(bodyChunks);
+			
+				for (var i = JSON.parse(body).events.length - 1; i >= 0; i--) {
+
+					var eventID = JSON.parse(body).events[i].id;
+					var eventName = JSON.parse(body).events[i].name.text;
+					var eventStartTime = JSON.parse(body).events[i].start.utc;
+					var eventStatus = JSON.parse(body).events[i].status;
+
+					// Create an object for this event
+					var eventbriteOject = new eventbriteData(eventID, eventName, eventStartTime, eventStatus);
+
+					events.push(eventbriteOject);
+
+					console.log(events);
+				};
+			});
+		});
+
+		// Pick up here... Use callback to pull attendees from event.eventID
+		req.end();
+
+		req.on('error', function(e) {
+  			console.log('ERROR: ' + e.message);
+		});
+
+		res.sendStatus(res.statusCode);
 	}
 }
 
