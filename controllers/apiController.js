@@ -74,7 +74,7 @@ var apiController = {
 
 		var events = [];
 
-		var req = https.request(options, function(res) {
+		var req = https.get(options, function(res) {
 
 			var bodyChunks = [];
 			
@@ -96,13 +96,70 @@ var apiController = {
 
 					events.push(eventbriteOject);
 
-					console.log(events);
+					options.path = '/v3/events/' + eventID + '/attendees/';
+					
+					var client = twilio( configVars.twilioSID, configVars.twilioAuthToken );
+					
+					var req2 = https.get(options, function(res) {
+
+						var req2BodyChunks = [];
+
+						res.on('data', function(chunk) {
+							req2BodyChunks.push(chunk);
+						}).on('end', function() {
+
+							var req2Body = Buffer.concat(req2BodyChunks);
+
+							// Function to remove extraneous characters
+							var removeGarbage = function(val){
+								if (val.charCodeAt() > 47 && val.charCodeAt() < 58) {
+									return val;
+								};
+							};
+						
+							var toNumbers = [];
+
+							for (var i = 0; i < JSON.parse(req2Body)['attendees'].length; i++) {
+								if (JSON.parse(req2Body)['attendees'][i]['answers'][0]['answer']) {
+									toNumbers.push(JSON.parse(req2Body)['attendees'][i]['profile']['first_name']);
+									toNumbers.push(JSON.parse(req2Body)['attendees'][i]['answers'][0]['answer'].split('').filter(removeGarbage).join(''));
+									toNumbers.push(JSON.parse(req2Body)['attendees'][i]['event_id']);
+								};
+							};
+
+							console.log(toNumbers);
+
+							for (var i = 1; i < toNumbers.length; i += 3) {
+
+								var toNumber = toNumbers[i];
+
+								if (toNumber.length === 10) {
+
+									var message = 'Hello ' + toNumbers[i-1] + configVars.messageBody + '"' + eventName + '". For further information, please visit: https://www.eventbrite.com/event/' + toNumbers[i+1];
+
+									console.log(message);
+									
+									client.sendMessage( { to: '+1' + toNumber, from: configVars.fromNumber, body: message }, function( err, data ) {
+										// console.log('+1' + toNumber);
+										console.log(err);
+									});
+								};
+							};
+						});
+					});
+
+					req2.on('error', function(e) {
+  						console.log('ERROR: ' + e.message);
+					});
+
+					// res.sendStatus('200');
 				};
+
+				console.log(options);
+				console.log(events);
+
 			});
 		});
-
-		// Pick up here... Use callback to pull attendees from event.eventID
-		req.end();
 
 		req.on('error', function(e) {
   			console.log('ERROR: ' + e.message);
