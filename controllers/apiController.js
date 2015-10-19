@@ -6,66 +6,7 @@ var eventbriteData = require('../model/eventbriteData.js');
 var configVars = require('../config/configVars.json');
 
 var apiController = {
-	attendees: function(req, res) {
-		var options = {
-			host: 'www.eventbriteapi.com',
-			path: '/v3/users/me/owned_event_attendees/',
-			headers : {"Authorization": "Bearer " + configVars.eventbriteToken }
-		};
-		var client = twilio( configVars.twilioSID, configVars.twilioAuthToken );
-		var req = https.get(options, function(res) {
-  			// console.log('STATUS: ' + res.statusCode);
-  			// console.log('HEADERS: ' + JSON.stringify(res.headers));
-			var bodyChunks = [];
-			res.on('data', function(chunk) {
-				bodyChunks.push(chunk);
-			}).on('end', function() {
-				
-				var body = Buffer.concat(bodyChunks);
-				
-				// Function to remove extraneous characters
-				var removeGarbage = function(val){
-					if (val.charCodeAt() > 47 && val.charCodeAt() < 58) {
-						return val;
-					};
-				};
-
-				var toNumbers = [];
-
-				for (var i = 0; i < JSON.parse(body)['attendees'].length; i++) {
-					if (JSON.parse(body)['attendees'][i]['answers'][0]['answer']) {
-						toNumbers.push(JSON.parse(body)['attendees'][i]['profile']['first_name']);
-						toNumbers.push(JSON.parse(body)['attendees'][i]['answers'][0]['answer'].split('').filter(removeGarbage).join(''));
-					};
-				};
-				console.log(toNumbers);
-
-				for (var i = 1; i < toNumbers.length; i += 2) {
-					var toNumber = toNumbers[i];
-
-					if (toNumber.length === 10) {
-
-						console.log('Hello ' + toNumbers[i-1] + configVars.messageBody);
-						
-						client.sendMessage( { to: '+1' + toNumber, from: configVars.fromNumber, body: 'Hello ' + toNumbers[i-1] + configVars.messageBody }, function( err, data ) {
-							// console.log('+1' + toNumber);
-							console.log(err);
-						});
-					};
-				};
-				
-				// console.log( JSON.parse(body)['attendees'][1]['profile']['first_name'] );
-				// console.log(JSON.parse(body));
-			})
-		});
-
-		req.on('error', function(e) {
-  			console.log('ERROR: ' + e.message);
-		});
-
-		res.sendStatus('200');
-	},
-	events : function (req, res) {
+	notify : function (req, res) {
 		var options = {
 			host: 'www.eventbriteapi.com',
 			path: '/v3/users/me/owned_events/',
@@ -91,15 +32,16 @@ var apiController = {
 					var eventStartTime = JSON.parse(body).events[i].start.utc;
 					var eventStatus = JSON.parse(body).events[i].status;
 
-					// Create an object for this event
+					// Create an object for this event and push to events array - Not currently used 
 					var eventbriteOject = new eventbriteData(eventID, eventName, eventStartTime, eventStatus);
-
 					events.push(eventbriteOject);
 
+					// Reset API path for followup GET request
 					options.path = '/v3/events/' + eventID + '/attendees/';
 					
 					var client = twilio( configVars.twilioSID, configVars.twilioAuthToken );
 					
+					// Followup GET request to retrieve event[i] attendees
 					var req2 = https.get(options, function(res) {
 
 						var req2BodyChunks = [];
@@ -110,17 +52,24 @@ var apiController = {
 
 							var req2Body = Buffer.concat(req2BodyChunks);
 
-							// Function to remove extraneous characters
+							// Function to remove extraneous characters from entered phone number
 							var removeGarbage = function(val){
 								if (val.charCodeAt() > 47 && val.charCodeAt() < 58) {
 									return val;
 								};
 							};
 						
+							var recipient = {};
 							var toNumbers = [];
 
 							for (var i = 0; i < JSON.parse(req2Body)['attendees'].length; i++) {
 								if (JSON.parse(req2Body)['attendees'][i]['answers'][0]['answer']) {
+									// recipient.name = JSON.parse(req2Body)['attendees'][i]['profile']['first_name'];
+									// recipient.phone = JSON.parse(req2Body)['attendees'][i]['answers'][0]['answer'].split('').filter(removeGarbage).join('');
+									// recipient.eventID = JSON.parse(req2Body)['attendees'][i]['event_id'];
+
+									// toNumbers.push(recipient);
+
 									toNumbers.push(JSON.parse(req2Body)['attendees'][i]['profile']['first_name']);
 									toNumbers.push(JSON.parse(req2Body)['attendees'][i]['answers'][0]['answer'].split('').filter(removeGarbage).join(''));
 									toNumbers.push(JSON.parse(req2Body)['attendees'][i]['event_id']);
@@ -137,34 +86,28 @@ var apiController = {
 
 									var message = 'Hello ' + toNumbers[i-1] + configVars.messageBody + '"' + eventName + '". For further information, please visit: https://www.eventbrite.com/event/' + toNumbers[i+1];
 
-									console.log(message);
+									// console.log(message);
 									
 									client.sendMessage( { to: '+1' + toNumber, from: configVars.fromNumber, body: message }, function( err, data ) {
-										// console.log('+1' + toNumber);
-										console.log(err);
+										if (err) {
+											console.log(err);
+										};
 									});
 								};
 							};
 						});
 					});
-
 					req2.on('error', function(e) {
   						console.log('ERROR: ' + e.message);
 					});
-
-					// res.sendStatus('200');
 				};
-
 				console.log(options);
 				console.log(events);
-
 			});
 		});
-
 		req.on('error', function(e) {
   			console.log('ERROR: ' + e.message);
 		});
-
 		res.sendStatus(res.statusCode);
 	}
 }
