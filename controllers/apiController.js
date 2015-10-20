@@ -15,6 +15,7 @@ var apiController = {
 
 		var events = [];
 
+		// GET Events List
 		var req = https.get(options, function(res) {
 
 			var bodyChunks = [];
@@ -59,32 +60,30 @@ var apiController = {
 								};
 							};
 						
-							var recipient = {};
 							var toNumbers = [];
 
 							for (var i = 0; i < JSON.parse(req2Body)['attendees'].length; i++) {
 								if (JSON.parse(req2Body)['attendees'][i]['answers'][0]['answer']) {
-									// recipient.name = JSON.parse(req2Body)['attendees'][i]['profile']['first_name'];
-									// recipient.phone = JSON.parse(req2Body)['attendees'][i]['answers'][0]['answer'].split('').filter(removeGarbage).join('');
-									// recipient.eventID = JSON.parse(req2Body)['attendees'][i]['event_id'];
 
-									// toNumbers.push(recipient);
+									var recipient = {};
 
-									toNumbers.push(JSON.parse(req2Body)['attendees'][i]['profile']['first_name']);
-									toNumbers.push(JSON.parse(req2Body)['attendees'][i]['answers'][0]['answer'].split('').filter(removeGarbage).join(''));
-									toNumbers.push(JSON.parse(req2Body)['attendees'][i]['event_id']);
+									recipient.name = JSON.parse(req2Body)['attendees'][i]['profile']['first_name'];
+									recipient.phone = JSON.parse(req2Body)['attendees'][i]['answers'][0]['answer'].split('').filter(removeGarbage).join('');
+									recipient.eventID = JSON.parse(req2Body)['attendees'][i]['event_id'];
+
+									toNumbers.push(recipient);
 								};
 							};
 
-							console.log(toNumbers);
+							// console.log(toNumbers);
 
-							for (var i = 1; i < toNumbers.length; i += 3) {
+							for (var i = 0; i < toNumbers.length; i++) {
 
-								var toNumber = toNumbers[i];
+								var toNumber = toNumbers[i].phone;
 
 								if (toNumber.length === 10) {
 
-									var message = 'Hello ' + toNumbers[i-1] + configVars.messageBody + '"' + eventName + '". For further information, please visit: https://www.eventbrite.com/event/' + toNumbers[i+1];
+									var message = 'Hello ' + toNumbers[i].name + configVars.messageBody + '"' + eventName + '". For further information, please visit: https://www.eventbrite.com/event/' + toNumbers[i].eventID;
 
 									// console.log(message);
 									
@@ -101,8 +100,8 @@ var apiController = {
   						console.log('ERROR: ' + e.message);
 					});
 				};
-				console.log(options);
-				console.log(events);
+				// console.log(options);
+				// console.log(events);
 			});
 		});
 		req.on('error', function(e) {
